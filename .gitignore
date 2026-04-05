@@ -29,9 +29,11 @@ db.sqlite3
 db.sqlite3-journal
 media/
 staticfiles/
+.python-version
 
 .env
-.python-version
+*.sql
+*.dump
 
 .vscode/
 .idea/
