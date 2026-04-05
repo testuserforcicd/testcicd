@@ -1,18 +1,43 @@
-# Виртуальное окружение
 venv/
 .venv/
 env/
+ENV/
 
-# Python
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
-# База данных (если вдруг решишь использовать SQLite)
-*.sqlite3
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
 
-# Настройки VS Code
-.vscode/
-
-# Секретные данные
 .env
+.python-version
+
+.vscode/
+.idea/
+*.swp
+*.swo
+
+*.log
+.DS_Store
+Thumbs.db

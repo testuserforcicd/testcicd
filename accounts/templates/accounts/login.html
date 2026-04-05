@@ -8,6 +8,9 @@
         {{ form.as_p }}
         <button type="submit">Войти</button>
     </form>
+    {% load socialaccount %}
+    <hr>
+    <a href="{% provider_login_url 'github' %}">Войти через GitHub</a>
     <p>Нет аккаунта? <a href="{% url 'register' %}">Зарегистрироваться</a></p>
 </body>
 </html>
