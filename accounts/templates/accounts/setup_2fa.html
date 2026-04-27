@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head><title>Настройка 2FA</title></head>
+<body>
+    <h2>Настройка двухфакторной аутентификации</h2>
+    <p>1. Отсканируйте этот QR-код в приложении (Google Authenticator / Authy):</p>
+    
+    <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code">
+
+    <p>2. Введите 6-значный код из приложения для подтверждения:</p>
+    <form method="post" action="{% url 'verify_2fa_setup' %}">
+        {% csrf_token %}
+        <input type="text" name="otp_token" placeholder="000000" required maxlength="6">
+        <button type="submit">Подтвердить и включить</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Подтверждение входа | WAF</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f4f7f6; }
+        .otp-container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 300px; text-align: center; }
+        input[type="text"] { width: 100%; padding: 10px; margin: 1rem 0; border: 1px solid #ddd; border-radius: 4px; font-size: 1.2rem; letter-spacing: 5px; text-align: center; }
+        button { width: 100%; padding: 10px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; }
+        button:hover { background: #218838; }
+        .error { color: #dc3545; font-size: 0.9rem; margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+
+<div class="otp-container">
+    <h2>Вход защищен</h2>
+    <p>Введите 6-значный код из вашего приложения аутентификации</p>
+
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <input type="text" name="otp_token" 
+               placeholder="000000" 
+               pattern="\d{6}" 
+               required 
+               autofocus 
+               autocomplete="one-time-code">
+        <button type="submit">Подтвердить</button>
+    </form>
+    
+    <p style="margin-top: 1.5rem; font-size: 0.8rem; color: #666;">
+        Если вы потеряли доступ к устройству, обратитесь к администратору.
+    </p>
+</div>
+
+</body>
+</html>

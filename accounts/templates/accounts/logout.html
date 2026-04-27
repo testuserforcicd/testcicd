@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Выход — WAF</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #0f1117;
+    color: #e2e8f0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .container {
+    background: #1a1d2e;
+    border: 1px solid #2d3250;
+    border-radius: 12px;
+    padding: 40px 48px;
+    width: 100%;
+    max-width: 420px;
+    text-align: center;
+  }
+  .logo {
+    font-size: 22px;
+    font-weight: 700;
+    color: #6366f1;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 32px;
+  }
+  h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #e2e8f0;
+  }
+  p {
+    font-size: 14px;
+    color: #94a3b8;
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+  .btn-group {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    border: none;
+    transition: background .15s;
+  }
+  .btn-danger { background: #ef4444; color: #fff; }
+  .btn-danger:hover { background: #dc2626; }
+  .btn-secondary { background: #2d3250; color: #94a3b8; }
+  .btn-secondary:hover { background: #374162; color: #e2e8f0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="logo">WAF Panel</div>
+  <div class="subtitle">Система защиты веб-приложений</div>
+  <h2>Выход из системы</h2>
+  <p>Вы действительно хотите завершить текущий сеанс?</p>
+  <div class="btn-group">
+    <a href="javascript:history.back()" class="btn btn-secondary">Отмена</a>
+    <form method="post" style="display:inline;">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">Выйти</button>
+    </form>
+  </div>
+</div>
+</body>
+</html>

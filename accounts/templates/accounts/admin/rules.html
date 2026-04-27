@@ -1,0 +1,61 @@
+{% extends "accounts/admin/base.html" %}
+{% block title %}Правила WAF{% endblock %}
+{% block page_title %}Реестр правил WAF{% endblock %}
+{% block content %}
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;align-items:start;">
+  <div class="card">
+    <div class="card-title">Сигнатуры ({{ rules|length }})</div>
+    <table>
+      <thead><tr><th>Название</th><th>Критичность</th><th>Действие</th><th>Статус</th><th>Изменено</th><th></th></tr></thead>
+      <tbody>
+      {% for rule in rules %}
+      <tr>
+        <td>
+          <strong>{{ rule.name }}</strong>
+          {% if rule.description %}<div style="font-size:11px;color:#64748b;margin-top:2px;">{{ rule.description|truncatechars:60 }}</div>{% endif %}
+        </td>
+        <td>
+          {% if rule.severity == 'critical' %}<span class="badge badge-red">Критическая</span>
+          {% elif rule.severity == 'high' %}<span class="badge badge-yellow">Высокая</span>
+          {% elif rule.severity == 'medium' %}<span class="badge badge-blue">Средняя</span>
+          {% else %}<span class="badge">Низкая</span>{% endif %}
+        </td>
+        <td>
+          {% if rule.action == 'block' %}<span class="badge badge-red">Блок</span>
+          {% elif rule.action == 'allow' %}<span class="badge badge-green">Разрешить</span>
+          {% else %}<span class="badge badge-blue">Лог</span>{% endif %}
+        </td>
+        <td>{% if rule.is_active %}<span class="badge badge-green">Активно</span>{% else %}<span class="badge badge-red">Откл.</span>{% endif %}</td>
+        <td style="color:#64748b;font-size:12px;">{{ rule.updated_at|date:"d.m.Y" }}</td>
+        <td style="display:flex;gap:4px;">
+          <a href="{% url 'admin_rule_edit' rule.id %}" class="btn btn-sm btn-secondary"></a>
+          <form method="post" action="{% url 'admin_rule_toggle' rule.id %}">{% csrf_token %}
+            <button class="btn btn-sm {% if rule.is_active %}btn-warning{% else %}btn-success{% endif %}">{% if rule.is_active %}Откл.{% else %}Вкл.{% endif %}</button>
+          </form>
+          <form method="post" action="{% url 'admin_rule_delete' rule.id %}" onsubmit="return confirm('Удалить правило?')">{% csrf_token %}
+            <button class="btn btn-sm btn-danger"></button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" style="color:#64748b;text-align:center;padding:24px;">Правил нет</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Добавить правило</div>
+    <form method="post">{% csrf_token %}
+      {% for field in form %}
+      <div class="form-group">
+        <label>{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}<div style="color:#f87171;font-size:12px;">{{ field.errors }}</div>{% endif %}
+      </div>
+      {% endfor %}
+      <button class="btn btn-primary" style="width:100%;">Добавить</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

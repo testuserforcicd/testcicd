@@ -1,0 +1,12 @@
+# Dockerfile.engine
+FROM python:3.13-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt psycopg2-binary
+
+COPY . .
+
+# Запускаем точку входа вашего движка
+CMD ["python", "engine/proxy/server.py"]

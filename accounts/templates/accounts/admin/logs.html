@@ -1,0 +1,88 @@
+{% extends "accounts/admin/base.html" %}
+{% block title %}Логи{% endblock %}
+{% block page_title %}Логи запросов{% endblock %}
+{% block content %}
+
+<div style="display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 24px;">
+    
+    <div class="card" style="flex: 1; min-width: 250px; margin-bottom: 0; padding: 20px;">
+        <div class="card-title" style="margin-bottom: 16px; margin-top: 0; display: flex; align-items: center; gap: 8px;">
+            <svg style="width: 18px; height: 18px; color: #6366f1;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+            Статистика системы
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #2d3250; font-size: 14px;">
+            <span style="color: #94a3b8;">Всего запросов:</span>
+            <span style="font-weight: 600; color: #e2e8f0;">{{ stats.total_requests|default:"0" }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px;">
+            <span style="color: #94a3b8;">Заблокировано атак:</span>
+            <span style="font-weight: 600; color: #ef4444;">{{ stats.blocked_requests|default:"0" }}</span>
+        </div>
+    </div>
+
+    <div class="card" style="flex: 2; min-width: 350px; margin-bottom: 0; padding: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <div class="card-title" style="margin: 0;">Готовые дампы базы (CSV)</div>
+            <a href="{% url 'admin_download_logs' %}" class="btn" style="background: #10b981; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 13px; text-decoration: none;">
+                + Сгенерировать новый дамп
+            </a>
+        </div>
+        
+        {% if exports %}
+            <div style="display: flex; flex-direction: column; gap: 8px; max-height: 150px; overflow-y: auto; padding-right: 5px;">
+            {% for f in exports %}
+                <div style="display: flex; justify-content: space-between; align-items: center; background: #0f1117; padding: 10px 14px; border-radius: 6px; border: 1px solid #2d3250;">
+                    <span style="font-size: 13px; color: #e2e8f0; font-family: monospace;">📄 {{ f.name }}</span>
+                    <div style="display: flex; gap: 8px;">
+                        <a href="{{ f.url }}" target="_blank" class="btn" style="background: #3b82f6; color: #fff; padding: 4px 10px; border-radius: 4px; font-size: 12px; text-decoration: none;">Скачать</a>
+                        <a href="{% url 'delete_export' f.name %}" class="btn" style="background: #ef4444; color: #fff; padding: 4px 10px; border-radius: 4px; font-size: 12px; text-decoration: none;" onclick="return confirm('Удалить этот дамп безвозвратно?')">Удалить</a>
+                    </div>
+                </div>
+            {% endfor %}
+            </div>
+        {% else %}
+            <p style="font-size: 13px; color: #64748b; text-align: center; margin-top: 20px;">Нет готовых дампов. Нажмите кнопку выше для запуска выгрузки.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+  <div class="card-title">Последние 500 запросов</div>
+  {% if logs %}
+  <div style="overflow-x:auto;">
+  <table style="font-size:12px; width: 100%; border-collapse: collapse;">
+    <thead>
+        <tr style="text-align: left; border-bottom: 1px solid #2d3250;">
+            <th style="padding: 8px; color: #a5b4fc;">Время</th>
+            <th style="padding: 8px; color: #a5b4fc;">IP</th>
+            <th style="padding: 8px; color: #a5b4fc;">Метод</th>
+            <th style="padding: 8px; color: #a5b4fc;">Путь</th>
+            <th style="padding: 8px; color: #a5b4fc;">Код</th>
+            <th style="padding: 8px; color: #a5b4fc;">Сайт</th>
+            <th style="padding: 8px; color: #a5b4fc;">Заблокирован</th>
+            <th style="padding: 8px; color: #a5b4fc;">Правило</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for log in logs %}
+    <tr style="border-bottom: 1px solid #1e2235;">
+      <td style="padding: 8px; color:#64748b; white-space:nowrap;">{{ log.timestamp|date:"d.m H:i:s" }}</td>
+      <td style="padding: 8px; font-family:monospace; color: #e2e8f0;">{{ log.ip_address }}</td>
+      <td style="padding: 8px;"><span class="badge {% if log.method == 'GET' %}badge-green{% elif log.method == 'POST' %}badge-blue{% else %}badge-yellow{% endif %}">{{ log.method }}</span></td>
+      <td style="padding: 8px; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color: #e2e8f0;" title="{{ log.path }}">{{ log.path }}</td>
+      <td style="padding: 8px;">
+        <span class="badge {% if log.status_code < 300 %}badge-green{% elif log.status_code < 400 %}badge-yellow{% else %}badge-red{% endif %}">{{ log.status_code }}</span>
+      </td>
+      <td style="padding: 8px; color:#94a3b8;">{{ log.site.domain|default:"—" }}</td>
+      <td style="padding: 8px;">{% if log.was_blocked %}<span class="badge badge-red" style="background: #7f1d1d; color: #fca5a5;">Да</span>{% else %}<span style="color:#64748b;">—</span>{% endif %}</td>
+      <td style="padding: 8px; color:#94a3b8;">{{ log.rule_triggered.name|default:"—"|truncatechars:20 }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <p style="color:#64748b;text-align:center;padding:24px;">Логов пока нет</p>
+  {% endif %}
+</div>
+{% endblock %}

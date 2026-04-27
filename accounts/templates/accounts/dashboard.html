@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Личный кабинет — WAF</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
+    .topbar { background: #1a1d2e; border-bottom: 1px solid #2d3250; padding: 14px 32px; display: flex; align-items: center; justify-content: space-between; }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .logo-icon { width: 30px; height: 30px; background: #6366f1; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .logo-icon svg { width: 16px; height: 16px; fill: #fff; }
+    .logo-text { font-size: 16px; font-weight: 700; color: #6366f1; }
+    .topbar-right { display: flex; align-items: center; gap: 14px; }
+    .topbar-right .username { font-size: 13px; color: #94a3b8; }
+    .topbar-right form { margin: 0; }
+    .topbar-right button.logout-btn { 
+      background: none; 
+      border: none; 
+      font-size: 13px; 
+      color: #6366f1; 
+      text-decoration: none; 
+      cursor: pointer;
+      padding: 0;
+      font-family: inherit;
+    }
+    .topbar-right button.logout-btn:hover { 
+      text-decoration: underline; 
+      color: #8183f4;
+    }
+    .main { max-width: 900px; margin: 32px auto; padding: 0 24px; }
+    .profile-header { background: #1a1d2e; border: 1px solid #2d3250; border-radius: 12px; padding: 28px; display: flex; align-items: center; gap: 24px; margin-bottom: 24px; }
+    .avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #6366f1; background: #2d3250; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .avatar-placeholder { width: 80px; height: 80px; border-radius: 50%; background: #2d3250; border: 3px solid #6366f1; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .avatar-placeholder svg { width: 36px; height: 36px; stroke: #6366f1; }
+    .profile-info h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+    .profile-info p { color: #94a3b8; font-size: 13px; margin-bottom: 8px; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+    .badge-plan { background: #1e3a5f; color: #60a5fa; }
+    .badge-plan.pro { background: #3b0764; color: #c084fc; }
+    .badge-plan.pro { background: #3b0764; color: #c084fc; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .card { background: #1a1d2e; border: 1px solid #2d3250; border-radius: 10px; padding: 22px; }
+    .card-title { font-size: 14px; font-weight: 600; color: #a5b4fc; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .card-title svg { width: 16px; height: 16px; }
+    .info-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid #1e2235; font-size: 13px; }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: #64748b; }
+    .info-value { color: #e2e8f0; font-weight: 500; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; text-decoration: none; border: none; transition: all .15s; }
+    .btn-primary { background: #6366f1; color: #fff; }
+    .btn-primary:hover { background: #5055d8; }
+    .btn-secondary { background: #2d3250; color: #94a3b8; }
+    .btn-secondary:hover { background: #374162; color: #e2e8f0; }
+    .btn-outline { background: transparent; color: #6366f1; border: 1px solid #6366f1; }
+    .btn-outline:hover { background: #6366f1; color: #fff; }
+    .btn-sm { padding: 5px 12px; font-size: 12px; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+    .status-on { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+    .status-off { background: #ef4444; }
+    .contact-form textarea { width: 100%; background: #0f1117; border: 1px solid #2d3250; border-radius: 8px; padding: 10px 14px; color: #e2e8f0; font-size: 13px; resize: vertical; min-height: 100px; margin-bottom: 10px; }
+    .contact-form textarea:focus { outline: none; border-color: #6366f1; }
+    .alert { padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; font-size: 13px; }
+    .alert-success { background: #14532d; color: #4ade80; border: 1px solid #166534; }
+    .alert-error { background: #3f1b1b; color: #fca5a5; border: 1px solid #7f1d1d; }
+    .logout-form { display: inline; }
+    .input-field { width: 100%; background: #0f1117; border: 1px solid #2d3250; border-radius: 8px; padding: 10px 14px; color: #e2e8f0; font-size: 13px; }
+    .input-field:focus { outline: none; border-color: #6366f1; }
+  </style>
+</head>
+<body>
+<div class="topbar">
+  <a class="logo" href="{% url 'dashboard' %}">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+    </div>
+    <div class="logo-text">WAF Panel</div>
+  </a>
+  <div class="topbar-right">
+    <span class="username">{{ user.username }}</span>
+    <!-- Форма для logout (POST запрос) -->
+    <form method="post" action="{% url 'logout' %}" class="logout-form" id="logoutForm">
+      {% csrf_token %}
+      <button type="submit" class="logout-btn">Выйти</button>
+    </form>
+  </div>
+</div>
+
+<div class="main">
+
+  {% if messages %}
+    {% for msg in messages %}
+      <div class="alert alert-success">{{ msg }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- Profile header -->
+  <div class="profile-header">
+    {% if user.avatar %}
+      <div class="avatar"><img src="{{ user.avatar.url }}" alt="Аватар"></div>
+    {% else %}
+      <div class="avatar-placeholder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+    {% endif %}
+    <div class="profile-info">
+      <h2>{{ user.username }}</h2>
+      <p>{{ user.email }}</p>
+      <span class="badge badge-plan {% if user.tariff_plan == 'pro' %}pro{% endif %}">
+        Тариф: {{ user.get_tariff_plan_display|default:"Базовый" }}
+      </span>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <!-- Security card -->
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Безопасность аккаунта
+      </div>
+      {% with device=user.totpdevice_set.all.0 %}
+        <div class="info-row">
+          <span class="info-label">Двухфакторная аутентификация</span>
+          <span class="info-value">
+            {% if device and device.confirmed %}
+              <span class="status-dot status-on"></span>Включена
+            {% else %}
+              <span class="status-dot status-off"></span>Отключена
+            {% endif %}
+          </span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Email подтверждён</span>
+          <span class="info-value">{% if user.is_email_verified %}Да{% else %}Нет{% endif %}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Способ входа</span>
+          <span class="info-value">
+            {% if user.socialaccount_set.exists %}GitHub OAuth{% else %}Логин/Пароль{% endif %}
+          </span>
+        </div>
+        <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
+          {% if not device or not device.confirmed %}
+            <a href="{% url 'setup_2fa' %}" class="btn btn-primary btn-sm">Настроить 2FA</a>
+          {% else %}
+            <a href="{% url 'setup_2fa' %}" class="btn btn-secondary btn-sm">Переустановить 2FA</a>
+          {% endif %}
+        </div>
+      {% endwith %}
+    </div>
+
+    <!-- Tariff plan card -->
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        Тарифный план
+      </div>
+      {% if user.tariff_plan == 'pro' %}
+        <div class="info-row"><span class="info-label">Текущий план</span><span class="info-value" style="color:#c084fc;">Pro</span></div>
+        <div class="info-row"><span class="info-label">Сайтов</span><span class="info-value">До 20</span></div>
+        <div class="info-row"><span class="info-label">Трафик</span><span class="info-value">До 100 ГБ/мес</span></div>
+        <div class="info-row"><span class="info-label">Поддержка</span><span class="info-value">Электронная почта</span></div>
+      {% elif user.tariff_plan == 'free' %}
+        <div class="info-row"><span class="info-label">Текущий план</span><span class="info-value" style="color:#94a3b8;">Бесплатный</span></div>
+        <div class="info-row"><span class="info-label">Сайтов</span><span class="info-value">1</span></div>
+        <div class="info-row"><span class="info-label">Трафик</span><span class="info-value">До 1 ГБ/мес</span></div>
+        <div class="info-row"><span class="info-label">Поддержка</span><span class="info-value">Сообщество</span></div>
+      {% else %}
+        <div class="info-row"><span class="info-label">Текущий план</span><span class="info-value" style="color:#60a5fa;">Базовый</span></div>
+        <div class="info-row"><span class="info-label">Сайтов</span><span class="info-value">До 5</span></div>
+        <div class="info-row"><span class="info-label">Трафик</span><span class="info-value">До 10 ГБ/мес</span></div>
+        <div class="info-row"><span class="info-label">Поддержка</span><span class="info-value">Стандартная</span></div>
+      {% endif %}
+      <p style="font-size:12px;color:#64748b;margin-top:12px;">Для изменения тарифного плана обратитесь к администратору.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Аватар профиля
+      </div>
+      <form id="avatarForm">
+        {% csrf_token %}
+        <input class="input-field" type="file" name="avatar" accept="image/*" required>
+        <div style="margin-top: 12px;">
+          <button type="submit" class="btn btn-primary btn-sm">Обновить аватар</button>
+        </div>
+      </form>
+      
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22"/><path d="M5 8h14"/><path d="M5 16h14"/></svg>
+        Смена пароля
+      </div>
+      <form id="passwordForm">
+        {% csrf_token %}
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <input class="input-field" type="password" name="old_password" placeholder="Текущий пароль" required>
+          <input class="input-field" type="password" name="new_password" placeholder="Новый пароль" required>
+        </div>
+        <div style="margin-top: 12px;">
+          <button type="submit" class="btn btn-primary btn-sm">Сменить пароль</button>
+        </div>
+      </form>
+      
+    </div>
+
+    <div class="card" style="grid-column: span 2;">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        Мои защищаемые сервисы
+      </div>
+      
+      <form method="POST" style="margin-bottom: 24px; display: flex; gap: 10px; align-items: flex-end;">
+        {% csrf_token %}
+        
+        <input type="hidden" name="traffic_limit_mb" value="0">
+
+        <div style="flex: 1;">
+          <label style="font-size: 12px; color: #94a3b8; display: block; margin-bottom: 4px;">Домен (например, mysite.com)</label>
+          <input type="text" name="domain" required style="width: 100%; background: #0f1117; border: 1px solid #2d3250; border-radius: 8px; padding: 10px 14px; color: #e2e8f0;">
+        </div>
+        <div style="flex: 1;">
+          <label style="font-size: 12px; color: #94a3b8; display: block; margin-bottom: 4px;">IP целевого сервера (например, 192.168.1.5)</label>
+          <input type="text" name="target_ip" required style="width: 100%; background: #0f1117; border: 1px solid #2d3250; border-radius: 8px; padding: 10px 14px; color: #e2e8f0;">
+        </div>
+        <button type="submit" class="btn btn-primary" style="height: 40px;">Добавить сайт</button>
+      </form>
+
+      <div style="background: #0f1117; border: 1px solid #2d3250; border-radius: 8px; padding: 16px;">
+        <h4 style="font-size: 14px; color: #a5b4fc; margin-bottom: 12px;">Подключенные домены:</h4>
+        {% if sites %}
+          {% for site in sites %}
+            <div class="info-row">
+              <span class="info-label" style="font-weight: bold;">{{ site.domain }}</span>
+              <span class="info-value">проксируется на IP: {{ site.target_ip }}</span>
+              <span>
+                {% if site.is_protected %}
+                  <span class="badge badge-plan" style="background: #14532d; color: #4ade80;">Защита активна</span>
+                {% else %}
+                  <span class="badge badge-plan" style="background: #7f1d1d; color: #fca5a5;">Только логирование</span>
+                {% endif %}
+              </span>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p style="font-size: 13px; color: #64748b;">У вас пока нет подключенных сервисов. Добавьте первый домен выше.</p>
+        {% endif %}
+      </div>
+    </div>
+    <div class="card" style="grid-column: span 2;">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+        Статистика трафика и логи WAF
+      </div>
+      
+      <div style="display: flex; gap: 24px; flex-wrap: wrap; align-items: stretch;">
+        <div style="flex: 1; min-width: 250px; background: #0f1117; border: 1px solid #2d3250; border-radius: 8px; padding: 16px;">
+          <div class="info-row">
+            <span class="info-label">Всего запросов:</span>
+            <span class="info-value">{{ stats.total_requests|default:"0" }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Заблокировано:</span>
+            <span class="info-value" style="color: #ef4444;">{{ stats.blocked_requests|default:"0" }}</span>
+          </div>
+        </div>
+
+        <div style="flex: 1; min-width: 250px; background: #0f1117; border: 1px solid #2d3250; border-radius: 8px; padding: 16px; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <span style="font-size: 13px; font-weight: 600; color: #a5b4fc;">Готовые выгрузки (CSV)</span>
+                <a href="{% url 'user_download_logs' %}" class="btn btn-sm" style="background: #10b981; color: #fff;">
+                    Сгенерировать логи
+                </a>
+            </div>
+            
+            {% if exports %}
+                <div style="display: flex; flex-direction: column; gap: 8px; max-height: 150px; overflow-y: auto; padding-right: 5px;">
+                {% for f in exports %}
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: #1a1d2e; padding: 8px 12px; border-radius: 6px; border: 1px solid #2d3250;">
+                        <span style="font-size: 12px; color: #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="{{ f.name }}">📄 {{ f.name }}</span>
+                        <div style="display: flex; gap: 6px;">
+                            <a href="{{ f.url }}" target="_blank" class="btn btn-sm" style="background: #3b82f6; color: #fff; padding: 4px 8px;">Скачать</a>
+                            <a href="{% url 'delete_export' f.name %}" class="btn btn-sm" style="background: #ef4444; color: #fff; padding: 4px 8px;" onclick="return confirm('Точно удалить этот файл?')">Удалить</a>
+                        </div>
+                    </div>
+                {% endfor %}
+                </div>
+            {% else %}
+                <p style="font-size: 12px; color: #64748b; margin-top: auto; margin-bottom: auto; text-align: center;">Нет готовых файлов.<br>Нажмите "Сгенерировать", чтобы запустить процесс в фоне.</p>
+            {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact admin card -->
+    <div class="card" style="grid-column: span 2;">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Обратиться к администратору
+      </div>
+      <form method="post" action="{% url 'contact_admin' %}" class="contact-form">
+        {% csrf_token %}
+        <textarea name="message" placeholder="Опишите вашу проблему или вопрос..." required></textarea>
+        <button type="submit" class="btn btn-primary">Отправить сообщение</button>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function getCsrfToken() {
+    const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+    return csrfInput ? csrfInput.value : '';
+  }
+
+  function showDashboardAlert(message, isError = false) {
+    const main = document.querySelector('.main');
+    if (!main) return;
+    const alert = document.createElement('div');
+    alert.className = `alert ${isError ? 'alert-error' : 'alert-success'}`;
+    alert.textContent = message;
+    main.prepend(alert);
+    setTimeout(() => alert.remove(), 4500);
+  }
+
+  const avatarForm = document.getElementById('avatarForm');
+  if (avatarForm) {
+    avatarForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const formData = new FormData(avatarForm);
+      try {
+        const resp = await fetch('/api/v1/users/me/avatar/', {
+          method: 'PATCH',
+          headers: { 'X-CSRFToken': getCsrfToken() },
+          body: formData,
+          credentials: 'same-origin'
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.detail || 'Не удалось обновить аватар');
+        showDashboardAlert(data.detail || 'Аватар обновлён');
+        window.location.reload();
+      } catch (err) {
+        showDashboardAlert(err.message, true);
+      }
+    });
+  }
+
+  const passwordForm = document.getElementById('passwordForm');
+  if (passwordForm) {
+    passwordForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const payload = {
+        old_password: passwordForm.old_password.value,
+        new_password: passwordForm.new_password.value
+      };
+      try {
+        const resp = await fetch('/api/v1/users/me/password/change/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken()
+          },
+          credentials: 'same-origin',
+          body: JSON.stringify(payload)
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.detail || 'Не удалось сменить пароль');
+        passwordForm.reset();
+        showDashboardAlert(data.detail || 'Пароль обновлён');
+      } catch (err) {
+        showDashboardAlert(err.message, true);
+      }
+    });
+  }
+
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'Enter' && document.activeElement && document.activeElement.tagName !== 'TEXTAREA') {
+      const logoutForm = document.getElementById('logoutForm');
+      if (logoutForm && document.activeElement !== logoutForm.querySelector('button')) {
+       
+        if (event.target.closest('#logoutForm')) {
+          return;
+        }
+      }
+    }
+  });
+</script>
+</body>
+</html>
