@@ -17,7 +17,8 @@ jobs:
     # Шаг 1: Скачиваем исходный код из твоего репозитория на виртуалку
     - name: Checkout repository
       uses: actions/checkout@v4
-
+      with:
+        fetch-depth: 0
     # Шаг 2: Устанавливаем Python
     - name: Set up Python 3.13
       uses: actions/setup-python@v5
@@ -40,3 +41,9 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exit-zero
         # Проверяем на соответствие стилю (опционально, не уронит сборку при мелких недочетах)
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    # Шаг 5: Статический анализ кода на уязвимости (SAST)
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarqube-scan-action@master
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
