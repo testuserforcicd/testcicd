@@ -59,11 +59,14 @@ jobs:
     # Шаг 7: Сборка Docker-образа
     - name: Build Docker image
       run: |
-        docker build -f Dockerfile.web -t registry.gitlab.com/testuserforcicd/testuserforcicd-project/waf-web:latest .
+        # ВНИМАНИЕ: Путь теперь включает testuserforcicd-group
+        docker build -f Dockerfile.web -t registry.gitlab.com/testuserforcicd-group/testuserforcicd-project/waf-web:latest .
+
+    # Шаг 8: Сканирование безопасности контейнера (Aqua Trivy)
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
-        image-ref: 'registry.gitlab.com/testuserforcicd/testuserforcicd-project/waf-web:latest'
+        image-ref: 'registry.gitlab.com/testuserforcicd-group/testuserforcicd-project/waf-web:latest'
         format: 'table'
         exit-code: '0'
         ignore-unfixed: true
@@ -73,7 +76,7 @@ jobs:
     # Шаг 9: Отправка Docker-образа в реестр GitLab
     - name: Push Docker image to GitLab Registry
       run: |
-        docker push registry.gitlab.com/testuserforcicd/testuserforcicd-project/waf-web:latest
+        docker push registry.gitlab.com/testuserforcicd-group/testuserforcicd-project/waf-web:latest
 
     # Шаг 10: Создание релиза (сработает ТОЛЬКО при пуше Git-тега vX.Y.Z)
     - name: Create Release
