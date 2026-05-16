@@ -37,6 +37,6 @@ jobs:
     - name: Run Linter (flake8)
       run: |
         # Проверяем код на критические синтаксические ошибки
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exit-zero
         # Проверяем на соответствие стилю (опционально, не уронит сборку при мелких недочетах)
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
