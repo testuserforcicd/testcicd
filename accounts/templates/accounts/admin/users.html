@@ -1,0 +1,45 @@
+{% extends "accounts/admin/base.html" %}
+{% block title %}Пользователи{% endblock %}
+{% block page_title %}Управление пользователями{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-title">Зарегистрированные пользователи ({{ users|length }})</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Пользователь</th>
+        <th>Email</th>
+        <th>Роль</th>
+        <th>Статус</th>
+        <th>Email подтверждён</th>
+        <th>Дата регистрации</th>
+        <th>Действие</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for u in users %}
+    <tr>
+      <td>
+        <strong>{{ u.username }}</strong>
+        {% if u.is_superuser %}<span class="badge badge-purple" style="margin-left:4px;">super</span>{% endif %}
+        {% if u.pk == request.user.pk %}<span class="badge badge-blue" style="margin-left:4px;">вы</span>{% endif %}
+      </td>
+      <td style="color:#94a3b8;">{{ u.email }}</td>
+      <td>
+        {% if u.role == 'admin' %}<span class="badge badge-blue">Администратор</span>
+        {% else %}<span class="badge badge-green">Пользователь</span>{% endif %}
+      </td>
+      <td>
+        {% if u.is_blocked %}<span class="badge badge-red">Заблокирован</span>
+        {% elif u.is_active %}<span class="badge badge-green">Активен</span>
+        {% else %}<span class="badge badge-yellow">Неактивен</span>{% endif %}
+      </td>
+      <td>{% if u.is_email_verified %}Да{% else %}Нет{% endif %}</td>
+      <td style="color:#64748b;font-size:12px;">{{ u.date_joined|date:"d.m.Y" }}</td>
+      <td><a href="{% url 'admin_user_detail' u.id %}" class="btn btn-sm btn-secondary">Подробнее</a></td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

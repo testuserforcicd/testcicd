@@ -1,0 +1,21 @@
+{% extends "accounts/admin/base.html" %}
+{% block title %}Редактировать правило{% endblock %}
+{% block page_title %}Редактировать: {{ rule.name }}{% endblock %}
+{% block content %}
+<div class="card" style="max-width:600px;">
+  <div class="card-title">Редактировать сигнатуру</div>
+  <form method="post">{% csrf_token %}
+    {% for field in form %}
+    <div class="form-group">
+      <label>{{ field.label }}</label>
+      {{ field }}
+      {% if field.errors %}<div style="color:#f87171;font-size:12px;">{{ field.errors }}</div>{% endif %}
+    </div>
+    {% endfor %}
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-primary">Сохранить</button>
+      <a href="{% url 'admin_rules' %}" class="btn btn-secondary">Отмена</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

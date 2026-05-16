@@ -1,0 +1,54 @@
+{% extends "accounts/admin/base.html" %}
+{% block title %}Активные сессии{% endblock %}
+{% block page_title %}Активные сессии{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-title">Активные сессии ({{ sessions|length }})</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Ключ сессии</th>
+        <th>Пользователь</th>
+        <th>Истекает</th>
+        <th>Действие</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for s in sessions %}
+    <tr>
+      <td style="font-family:monospace;font-size:11px;color:#64748b;">
+        {{ s.session.session_key|truncatechars:24 }}
+        {% if s.session.session_key == current_session_key %}
+          <span class="badge badge-blue" style="margin-left:6px;">текущая</span>
+        {% endif %}
+      </td>
+      <td>
+        {% if s.user %}
+          <strong>{{ s.user.username }}</strong>
+          {% if s.user.is_superuser %}<span class="badge badge-purple" style="margin-left:4px;">super</span>{% endif %}
+        {% else %}
+          <span style="color:#64748b;">Аноним</span>
+        {% endif %}
+      </td>
+      <td style="color:#94a3b8;font-size:12px;">{{ s.session.expire_date|date:"d.m.Y H:i" }}</td>
+      <td>
+        {% if s.session.session_key == current_session_key %}
+          <span style="font-size:12px;color:#64748b;">— это ваша сессия</span>
+        {% else %}
+          <form method="post">{% csrf_token %}
+            <input type="hidden" name="session_key" value="{{ s.session.session_key }}">
+            <button class="btn btn-sm btn-danger" onclick="return confirm('Завершить сессию пользователя {{ s.user.username|default:'аноним' }}?')">
+              Завершить
+            </button>
+          </form>
+        {% endif %}
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="4" style="color:#64748b;text-align:center;padding:24px;">Активных сессий нет</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

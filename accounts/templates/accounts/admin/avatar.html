@@ -1,0 +1,21 @@
+{% extends "accounts/admin/base.html" %}
+{% block title %}Аватар{% endblock %}
+{% block page_title %}Смена аватара{% endblock %}
+{% block content %}
+<div class="card" style="max-width:480px;">
+  <div class="card-title">Загрузить аватар</div>
+  {% if request.user.avatar %}
+  <div style="margin-bottom:16px;">
+    <img src="{{ request.user.avatar.url }}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:2px solid #6366f1;">
+  </div>
+  {% endif %}
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="form-group">
+      <label>Выберите изображение</label>
+      <input type="file" name="avatar" accept="image/*">
+    </div>
+    <button class="btn btn-primary">Загрузить</button>
+  </form>
+</div>
+{% endblock %}

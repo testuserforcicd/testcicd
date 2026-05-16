@@ -1,0 +1,95 @@
+{% extends "accounts/admin/base.html" %}
+{% block title %}Токены доступа{% endblock %}
+{% block page_title %}Токены доступа к API{% endblock %}
+{% block content %}
+
+<div class="card">
+  <div class="card-title">Все токены ({{ tokens|length }})</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Название</th>
+        <th>Пользователь</th>
+        <th>Токен</th>
+        <th>Статус</th>
+        <th>Создан</th>
+        <th>Действия</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for token in tokens %}
+    <tr>
+      <td><strong>{{ token.name }}</strong></td>
+      <td>{{ token.user.username }}</td>
+      <td style="font-family:monospace;font-size:12px;color:#a5b4fc;letter-spacing:.5px;">
+        {{ token.token }}
+      </td>
+      <td>
+        {% if token.is_active %}
+          <span class="badge badge-green">Активен</span>
+        {% else %}
+          <span class="badge badge-red">Отключён</span>
+        {% endif %}
+      </td>
+      <td style="color:#64748b;font-size:12px;">{{ token.created_at|date:"d.m.Y H:i" }}</td>
+      <td>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+          <form method="post" action="{% url 'admin_token_toggle' token.id %}">{% csrf_token %}
+            <button class="btn btn-sm {% if token.is_active %}btn-warning{% else %}btn-success{% endif %}">
+              {% if token.is_active %}Откл.{% else %}Вкл.{% endif %}
+            </button>
+          </form>
+          <form method="post" action="{% url 'admin_token_delete' token.id %}" onsubmit="return confirm('Удалить токен?')">{% csrf_token %}
+            <button class="btn btn-sm btn-danger">Удалить</button>
+          </form>
+          <button class="btn btn-sm btn-secondary"
+            onclick="toggleIpPanel({{ token.id }})">Блок. IP</button>
+        </div>
+      </td>
+    </tr>
+    <!-- Панель управления заблокированными IP для этого токена -->
+    <tr id="ip-panel-{{ token.id }}" style="display:none;">
+      <td colspan="6" style="background:#12152a;padding:16px 20px;">
+        <div style="font-size:13px;color:#a5b4fc;font-weight:600;margin-bottom:12px;">
+          Заблокированные IP для токена «{{ token.name }}»
+        </div>
+        {% with ips=token.get_blocked_ips_list %}
+        {% if ips %}
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;">
+          {% for ip in ips %}
+          <div style="display:flex;align-items:center;gap:6px;background:#1a1d2e;border:1px solid #2d3250;border-radius:6px;padding:4px 10px;">
+            <span style="font-family:monospace;font-size:12px;color:#f87171;">{{ ip }}</span>
+            <form method="post" action="{% url 'admin_token_unblock_ip' token.id %}" style="display:inline;">
+              {% csrf_token %}
+              <input type="hidden" name="ip" value="{{ ip }}">
+              <button type="submit" style="background:none;border:none;color:#64748b;cursor:pointer;font-size:14px;line-height:1;padding:0;" title="Разблокировать">&times;</button>
+            </form>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p style="color:#64748b;font-size:13px;margin-bottom:12px;">Нет заблокированных IP-адресов</p>
+        {% endif %}
+        {% endwith %}
+        <form method="post" action="{% url 'admin_token_block_ip' token.id %}" style="display:flex;gap:8px;align-items:center;">
+          {% csrf_token %}
+          <input type="text" name="ip" placeholder="Введите IP-адрес (напр. 192.168.1.1)"
+            style="background:#0f1117;border:1px solid #2d3250;border-radius:6px;padding:7px 12px;color:#e2e8f0;font-size:13px;width:280px;">
+          <button type="submit" class="btn btn-sm btn-danger">Заблокировать IP</button>
+        </form>
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="6" style="color:#64748b;text-align:center;padding:24px;">Токенов нет</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+function toggleIpPanel(tokenId) {
+  const row = document.getElementById('ip-panel-' + tokenId);
+  row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+}
+</script>
+{% endblock %}

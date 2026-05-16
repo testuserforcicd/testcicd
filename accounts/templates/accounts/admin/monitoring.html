@@ -1,0 +1,50 @@
+{% extends "accounts/admin/base.html" %}
+{% block title %}Мониторинг{% endblock %}
+{% block page_title %}Мониторинг системы{% endblock %}
+{% block content %}
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-label">RPS (за минуту)</div>
+    <div class="stat-value">{{ rps }}</div>
+    <div class="stat-sub">запросов/мин</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">CPU</div>
+    <div class="stat-value">{{ cpu }}%</div>
+    <div class="progress"><div class="progress-bar {% if cpu > 80 %}danger{% elif cpu > 60 %}warning{% endif %}" style="width:{{ cpu }}%"></div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">RAM</div>
+    <div class="stat-value">{{ ram_percent }}%</div>
+    <div class="stat-sub">{{ ram_used }} / {{ ram_total }} ГБ</div>
+    <div class="progress"><div class="progress-bar {% if ram_percent > 80 %}danger{% elif ram_percent > 60 %}warning{% endif %}" style="width:{{ ram_percent }}%"></div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Диск</div>
+    <div class="stat-value">{{ disk_percent }}%</div>
+    <div class="stat-sub">{{ disk_used }} / {{ disk_total }} ГБ</div>
+    <div class="progress"><div class="progress-bar {% if disk_percent > 80 %}danger{% elif disk_percent > 60 %}warning{% endif %}" style="width:{{ disk_percent }}%"></div></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">Состояние базы данных</div>
+  {% if db_ok %}
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span style="width:10px;height:10px;border-radius:50%;background:#22c55e;display:inline-block;box-shadow:0 0 8px #22c55e;"></span>
+      <span style="color:#4ade80;font-weight:500;">БД доступна и отвечает корректно</span>
+    </div>
+  {% else %}
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span style="width:10px;height:10px;border-radius:50%;background:#ef4444;display:inline-block;box-shadow:0 0 8px #ef4444;"></span>
+      <span style="color:#f87171;font-weight:500;">БД недоступна!</span>
+    </div>
+  {% endif %}
+</div>
+
+<div class="card">
+  <div class="card-title">Обновить данные</div>
+  <p style="font-size:13px;color:#94a3b8;margin-bottom:12px;">Страница показывает snapshot на момент загрузки. Обновите страницу для актуальных данных.</p>
+  <a href="{% url 'admin_monitoring' %}" class="btn btn-primary"> Обновить</a>
+</div>
+{% endblock %}

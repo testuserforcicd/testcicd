@@ -1,0 +1,177 @@
+{% extends "accounts/admin/base.html" %}
+{% block title %}Пользователь {{ target.username }}{% endblock %}
+{% block page_title %}Пользователь: {{ target.username }}{% endblock %}
+{% block content %}
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+  <div class="card">
+    <div class="card-title">Тарифный план</div>
+    <p style="margin-bottom:12px;font-size:13px;color:#94a3b8;">
+      Текущий тариф:
+      {% if target.tariff_plan == 'pro' %}
+        <span class="badge badge-purple">Pro</span>
+      {% elif target.tariff_plan == 'free' %}
+        <span class="badge" style="background:#1e293b;color:#94a3b8;">Бесплатный</span>
+      {% else %}
+        <span class="badge badge-blue">Базовый</span>
+      {% endif %}
+    </p>
+    <form method="post">{% csrf_token %}
+      <input type="hidden" name="action" value="set_tariff">
+      <div class="form-group">
+        <label>Новый тариф</label>
+        <select name="tariff_plan">
+          <option value="free" {% if target.tariff_plan == 'free' %}selected{% endif %}>Бесплатный</option>
+          <option value="basic" {% if target.tariff_plan == 'basic' %}selected{% endif %}>Базовый</option>
+          <option value="pro" {% if target.tariff_plan == 'pro' %}selected{% endif %}>Pro</option>
+        </select>
+      </div>
+      <button class="btn btn-primary">Применить тариф</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Разграничение ролей</div>
+    <p style="margin-bottom:12px;font-size:13px;color:#94a3b8;">Текущая роль: <strong>{{ target.role }}</strong></p>
+    <form method="post">{% csrf_token %}
+      <input type="hidden" name="action" value="set_role">
+      <div class="form-group">
+        <label>Новая роль</label>
+        <select name="role">
+          <option value="user" {% if target.role == 'user' %}selected{% endif %}>Пользователь</option>
+          <option value="admin" {% if target.role == 'admin' %}selected{% endif %}>Администратор</option>
+        </select>
+      </div>
+      <button class="btn btn-primary">Сохранить роль</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Блокировка аккаунта</div>
+    <p style="margin-bottom:12px;font-size:13px;color:#94a3b8;">
+      Статус: {% if target.is_blocked %}<span class="badge badge-red">Заблокирован</span>{% else %}<span class="badge badge-green">Активен</span>{% endif %}
+    </p>
+    {% if target.pk == request.user.pk %}
+      <div class="alert alert-error">Нельзя заблокировать собственный аккаунт.</div>
+    {% else %}
+      <form method="post">{% csrf_token %}
+        <input type="hidden" name="action" value="toggle_block">
+        <button class="btn {% if target.is_blocked %}btn-success{% else %}btn-danger{% endif %}">
+          {% if target.is_blocked %}Разблокировать{% else %}Заблокировать{% endif %}
+        </button>
+      </form>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <div class="card-title">Смена пароля пользователя</div>
+    <form method="post">{% csrf_token %}
+      <input type="hidden" name="action" value="change_password">
+      <div class="form-group">
+        <label>Новый пароль</label>
+        <input type="password" name="new_password" placeholder="Введите новый пароль">
+      </div>
+      <button class="btn btn-primary">Сменить пароль</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Информация</div>
+    <table style="font-size:13px;">
+      <tr><td style="color:#64748b;padding:6px 0;">Email</td><td>{{ target.email }}</td></tr>
+      <tr><td style="color:#64748b;padding:6px 0;">Email подтверждён</td><td>{% if target.is_email_verified %}Да{% else %}Нет{% endif %}</td></tr>
+      <tr><td style="color:#64748b;padding:6px 0;">Дата регистрации</td><td>{{ target.date_joined|date:"d.m.Y H:i" }}</td></tr>
+      <tr><td style="color:#64748b;padding:6px 0;">Последний вход</td><td>{{ target.last_login|date:"d.m.Y H:i"|default:"—" }}</td></tr>
+      <tr><td style="color:#64748b;padding:6px 0;">Суперпользователь</td><td>{% if target.is_superuser %}Да{% else %}Нет{% endif %}</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- Подключённые сайты -->
+<div class="card">
+  <div class="card-title">Подключённые сайты ({{ sites|length }})</div>
+  {% if sites %}
+  <table>
+    <thead>
+      <tr>
+        <th>Домен</th>
+        <th>Защита</th>
+        <th>Лимит трафика</th>
+        <th>Добавлен</th>
+        <th>Управление защитой</th>
+        <th>Лимит трафика (МБ)</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for site in sites %}
+    <tr>
+      <td><strong>{{ site.domain }}</strong></td>
+      <td>
+        {% if site.is_protected %}
+          <span class="badge badge-green">Активна</span>
+        {% else %}
+          <span class="badge badge-red">Отключена</span>
+        {% endif %}
+      </td>
+      <td>
+        {% if site.traffic_limit_mb %}
+          <span class="badge badge-yellow">{{ site.traffic_limit_mb }} МБ</span>
+        {% else %}
+          <span style="color:#64748b;font-size:12px;">Без лимита</span>
+        {% endif %}
+      </td>
+      <td style="color:#64748b;font-size:12px;">{{ site.created_at|date:"d.m.Y" }}</td>
+      <td>
+        <form method="post">{% csrf_token %}
+          <input type="hidden" name="action" value="site_protection">
+          <input type="hidden" name="site_id" value="{{ site.id }}">
+          <button class="btn btn-sm {% if site.is_protected %}btn-warning{% else %}btn-success{% endif %}">
+            {% if site.is_protected %}Отключить защиту{% else %}Включить защиту{% endif %}
+          </button>
+        </form>
+      </td>
+      <td>
+        <form method="post" style="display:flex;gap:6px;align-items:center;">{% csrf_token %}
+          <input type="hidden" name="action" value="site_traffic">
+          <input type="hidden" name="site_id" value="{{ site.id }}">
+          <input type="number" name="traffic_limit_mb" value="{{ site.traffic_limit_mb }}"
+            min="0" placeholder="0 = без лимита"
+            style="width:130px;background:#0f1117;border:1px solid #2d3250;border-radius:6px;
+                   padding:5px 9px;color:#e2e8f0;font-size:13px;">
+          <button class="btn btn-sm btn-primary">Применить</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p style="color:#64748b;font-size:13px;">Сайтов не добавлено</p>
+  {% endif %}
+</div>
+
+<!-- Токены доступа пользователя -->
+{% if tokens %}
+<div class="card">
+  <div class="card-title">Токены доступа ({{ tokens|length }})</div>
+  <table>
+    <thead><tr><th>Название</th><th>Токен</th><th>Статус</th><th>Создан</th></tr></thead>
+    <tbody>
+    {% for t in tokens %}
+    <tr>
+      <td>{{ t.name }}</td>
+      <td style="font-family:monospace;font-size:12px;color:#a5b4fc;">{{ t.token }}</td>
+      <td>{% if t.is_active %}<span class="badge badge-green">Активен</span>{% else %}<span class="badge badge-red">Отключён</span>{% endif %}</td>
+      <td style="color:#64748b;font-size:12px;">{{ t.created_at|date:"d.m.Y H:i" }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<div style="margin-top:8px;">
+  <a href="{% url 'admin_users' %}" class="btn btn-secondary">Назад к списку</a>
+</div>
+{% endblock %}

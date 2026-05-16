@@ -1,0 +1,2518 @@
+openapi: 3.0.3
+info:
+  title: WAF API
+  version: 1.0.0
+  description: REST API для управления Web Application Firewall. Аутентификация через
+    Bearer-токен. Ошибки возвращаются в формате Problem Details (RFC 7807/9457).
+paths:
+  /api/v1/waf-status/:
+    get:
+      operationId: waf_status_retrieve
+      description: 'Возвращает, защищён ли домен WAF и на какой IP проксировать трафик.
+
+
+        Используется nginx/движком WAF. **Аутентификация не требуется.**'
+      summary: Получить статус защиты домена
+      parameters:
+      - in: query
+        name: domain
+        schema:
+          type: string
+        description: 'Домен для проверки, например: example.com'
+        required: true
+      tags:
+      - WAF Engine
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WAFStatusResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                400BadRequest:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5e
+                    title: Bad Request
+                    detail: Запрос содержит некорректные данные. Проверьте тело запроса.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 400 Bad Request
+          description: Некорректный запрос.
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+          description: HTTP-метод не поддерживается.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+          description: Внутренняя ошибка сервера.
+    post:
+      operationId: waf_status_create
+      description: 'Возвращает, защищён ли домен WAF и на какой IP проксировать трафик.
+
+
+        Используется nginx/движком WAF. **Аутентификация не требуется.**'
+      summary: Получить статус защиты домена
+      parameters:
+      - in: query
+        name: domain
+        schema:
+          type: string
+        description: 'Домен для проверки, например: example.com'
+        required: true
+      tags:
+      - WAF Engine
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WAFStatusResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                400BadRequest:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5e
+                    title: Bad Request
+                    detail: Запрос содержит некорректные данные. Проверьте тело запроса.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 400 Bad Request
+          description: Некорректный запрос.
+        '405':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+          description: HTTP-метод не поддерживается.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+          description: Внутренняя ошибка сервера.
+  /api/v1/sites/:
+    get:
+      operationId: sites_list
+      description: Возвращает все сайты текущего пользователя (по токену).
+      summary: Список защищённых сайтов
+      tags:
+      - Sites
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProtectedSite'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+          description: Внутренняя ошибка сервера.
+    post:
+      operationId: sites_create
+      description: Регистрирует новый домен в WAF для текущего пользователя.
+      summary: Добавить сайт под защиту
+      tags:
+      - Sites
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProtectedSiteCreateRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProtectedSite'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                400BadRequest:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5e
+                    title: Bad Request
+                    detail: Запрос содержит некорректные данные. Проверьте тело запроса.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 400 Bad Request
+          description: Некорректный запрос.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+          description: Внутренняя ошибка сервера.
+  /api/v1/sites/{site_id}/:
+    get:
+      operationId: sites_retrieve
+      summary: Детали сайта
+      parameters:
+      - in: path
+        name: site_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Sites
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProtectedSite'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                403Forbidden:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5c
+                    title: Forbidden
+                    detail: У вас нет прав для выполнения данного действия.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 403 Forbidden
+          description: Запрещено — недостаточно прав.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                404NotFound:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5d
+                    title: Not Found
+                    detail: Запрошенный ресурс не найден. Проверьте правильность URL.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 404 Not Found
+          description: Ресурс не найден.
+    patch:
+      operationId: sites_partial_update
+      summary: Обновить параметры сайта
+      parameters:
+      - in: path
+        name: site_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Sites
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProtectedSiteCreateRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProtectedSite'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                400BadRequest:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5e
+                    title: Bad Request
+                    detail: Запрос содержит некорректные данные. Проверьте тело запроса.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 400 Bad Request
+          description: Некорректный запрос.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                403Forbidden:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5c
+                    title: Forbidden
+                    detail: У вас нет прав для выполнения данного действия.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 403 Forbidden
+          description: Запрещено — недостаточно прав.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                404NotFound:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5d
+                    title: Not Found
+                    detail: Запрошенный ресурс не найден. Проверьте правильность URL.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 404 Not Found
+          description: Ресурс не найден.
+    delete:
+      operationId: sites_destroy
+      summary: Удалить сайт из защиты
+      parameters:
+      - in: path
+        name: site_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Sites
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeletedMsg'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                403Forbidden:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5c
+                    title: Forbidden
+                    detail: У вас нет прав для выполнения данного действия.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 403 Forbidden
+          description: Запрещено — недостаточно прав.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                404NotFound:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5d
+                    title: Not Found
+                    detail: Запрошенный ресурс не найден. Проверьте правильность URL.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 404 Not Found
+          description: Ресурс не найден.
+  /api/v1/rules/:
+    get:
+      operationId: rules_list
+      summary: Список правил WAF
+      tags:
+      - Rules
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WAFRule'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                403Forbidden:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5c
+                    title: Forbidden
+                    detail: У вас нет прав для выполнения данного действия.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 403 Forbidden
+          description: Запрещено — недостаточно прав.
+    post:
+      operationId: rules_create
+      summary: Создать правило WAF
+      tags:
+      - Rules
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WAFRuleCreateRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WAFRule'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                400BadRequest:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5e
+                    title: Bad Request
+                    detail: Запрос содержит некорректные данные. Проверьте тело запроса.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 400 Bad Request
+          description: Некорректный запрос.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                403Forbidden:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5c
+                    title: Forbidden
+                    detail: У вас нет прав для выполнения данного действия.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 403 Forbidden
+          description: Запрещено — недостаточно прав.
+  /api/v1/rules/{rule_id}/:
+    get:
+      operationId: rules_retrieve
+      summary: Получить правило WAF
+      parameters:
+      - in: path
+        name: rule_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Rules
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WAFRule'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                403Forbidden:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5c
+                    title: Forbidden
+                    detail: У вас нет прав для выполнения данного действия.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 403 Forbidden
+          description: Запрещено — недостаточно прав.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                404NotFound:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5d
+                    title: Not Found
+                    detail: Запрошенный ресурс не найден. Проверьте правильность URL.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 404 Not Found
+          description: Ресурс не найден.
+    patch:
+      operationId: rules_partial_update
+      summary: Обновить правило WAF
+      parameters:
+      - in: path
+        name: rule_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Rules
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedWAFRuleCreateRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WAFRule'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                400BadRequest:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5e
+                    title: Bad Request
+                    detail: Запрос содержит некорректные данные. Проверьте тело запроса.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 400 Bad Request
+          description: Некорректный запрос.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                403Forbidden:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5c
+                    title: Forbidden
+                    detail: У вас нет прав для выполнения данного действия.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 403 Forbidden
+          description: Запрещено — недостаточно прав.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                404NotFound:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5d
+                    title: Not Found
+                    detail: Запрошенный ресурс не найден. Проверьте правильность URL.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 404 Not Found
+          description: Ресурс не найден.
+    delete:
+      operationId: rules_destroy
+      summary: Удалить правило WAF
+      parameters:
+      - in: path
+        name: rule_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Rules
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RuleDeleted'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                403Forbidden:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5c
+                    title: Forbidden
+                    detail: У вас нет прав для выполнения данного действия.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 403 Forbidden
+          description: Запрещено — недостаточно прав.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                404NotFound:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5d
+                    title: Not Found
+                    detail: Запрошенный ресурс не найден. Проверьте правильность URL.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 404 Not Found
+          description: Ресурс не найден.
+  /api/v1/rules/{rule_id}/toggle/:
+    post:
+      operationId: rules_toggle_create
+      summary: Переключить активность правила
+      parameters:
+      - in: path
+        name: rule_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Rules
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RuleToggled'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                403Forbidden:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5c
+                    title: Forbidden
+                    detail: У вас нет прав для выполнения данного действия.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 403 Forbidden
+          description: Запрещено — недостаточно прав.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                404NotFound:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5d
+                    title: Not Found
+                    detail: Запрошенный ресурс не найден. Проверьте правильность URL.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 404 Not Found
+          description: Ресурс не найден.
+  /api/v1/logs/:
+    get:
+      operationId: logs_list
+      description: Администратор получает все логи. Обычный пользователь — только
+        по своим сайтам. Результат ограничен 500 записями (последние по времени).
+      summary: Получить логи запросов
+      parameters:
+      - in: query
+        name: blocked_only
+        schema:
+          type: boolean
+        description: Если true — только заблокированные запросы.
+      - in: query
+        name: site_id
+        schema:
+          type: integer
+        description: Фильтр по ID сайта.
+      tags:
+      - Logs
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RequestLog'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+          description: Внутренняя ошибка сервера.
+  /api/v1/logs/export/:
+    post:
+      operationId: logs_export_create
+      description: Задача выполняется асинхронно через Celery. Готовый файл появится
+        в /media/exports/.
+      summary: Запустить экспорт логов в CSV
+      tags:
+      - Logs
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportStarted'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+          description: Внутренняя ошибка сервера.
+  /api/v1/logs/exports/:
+    get:
+      operationId: logs_exports_list
+      summary: Список готовых CSV-экспортов
+      tags:
+      - Logs
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LogExport'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+  /api/v1/logs/exports/{filename}/:
+    delete:
+      operationId: logs_exports_destroy
+      summary: Удалить CSV-экспорт
+      parameters:
+      - in: path
+        name: filename
+        schema:
+          type: string
+        required: true
+      tags:
+      - Logs
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportDeleted'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                400BadRequest:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5e
+                    title: Bad Request
+                    detail: Запрос содержит некорректные данные. Проверьте тело запроса.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 400 Bad Request
+          description: Некорректный запрос.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                403Forbidden:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5c
+                    title: Forbidden
+                    detail: У вас нет прав для выполнения данного действия.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 403 Forbidden
+          description: Запрещено — недостаточно прав.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                404NotFound:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5d
+                    title: Not Found
+                    detail: Запрошенный ресурс не найден. Проверьте правильность URL.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 404 Not Found
+          description: Ресурс не найден.
+  /api/v1/tokens/:
+    get:
+      operationId: tokens_list
+      description: Пользователь видит свои токены. Администратор — все.
+      summary: Список токенов
+      tags:
+      - Tokens
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccessToken'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+    post:
+      operationId: tokens_create
+      summary: Создать токен доступа
+      tags:
+      - Tokens
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccessTokenCreateRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessToken'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                400BadRequest:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5e
+                    title: Bad Request
+                    detail: Запрос содержит некорректные данные. Проверьте тело запроса.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 400 Bad Request
+          description: Некорректный запрос.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+  /api/v1/tokens/{token_id}/:
+    patch:
+      operationId: tokens_partial_update
+      summary: Переключить активность токена (toggle)
+      parameters:
+      - in: path
+        name: token_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Tokens
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenToggled'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                403Forbidden:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5c
+                    title: Forbidden
+                    detail: У вас нет прав для выполнения данного действия.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 403 Forbidden
+          description: Запрещено — недостаточно прав.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                404NotFound:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5d
+                    title: Not Found
+                    detail: Запрошенный ресурс не найден. Проверьте правильность URL.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 404 Not Found
+          description: Ресурс не найден.
+    delete:
+      operationId: tokens_destroy
+      summary: Удалить токен
+      parameters:
+      - in: path
+        name: token_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Tokens
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenDeleted'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                403Forbidden:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5c
+                    title: Forbidden
+                    detail: У вас нет прав для выполнения данного действия.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 403 Forbidden
+          description: Запрещено — недостаточно прав.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                404NotFound:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5d
+                    title: Not Found
+                    detail: Запрошенный ресурс не найден. Проверьте правильность URL.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 404 Not Found
+          description: Ресурс не найден.
+  /api/v1/tokens/{token_id}/block-ip/:
+    post:
+      operationId: tokens_block_ip_create
+      summary: Заблокировать IP для токена
+      parameters:
+      - in: path
+        name: token_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Tokens
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlockIPBodyRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlockIPResult'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                400BadRequest:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5e
+                    title: Bad Request
+                    detail: Запрос содержит некорректные данные. Проверьте тело запроса.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 400 Bad Request
+          description: Некорректный запрос.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                403Forbidden:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5c
+                    title: Forbidden
+                    detail: У вас нет прав для выполнения данного действия.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 403 Forbidden
+          description: Запрещено — недостаточно прав.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                404NotFound:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5d
+                    title: Not Found
+                    detail: Запрошенный ресурс не найден. Проверьте правильность URL.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 404 Not Found
+          description: Ресурс не найден.
+  /api/v1/tokens/{token_id}/unblock-ip/:
+    post:
+      operationId: tokens_unblock_ip_create
+      summary: Разблокировать IP для токена
+      parameters:
+      - in: path
+        name: token_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Tokens
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UnblockIPBodyRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnblockIPResult'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                400BadRequest:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5e
+                    title: Bad Request
+                    detail: Запрос содержит некорректные данные. Проверьте тело запроса.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 400 Bad Request
+          description: Некорректный запрос.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                403Forbidden:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5c
+                    title: Forbidden
+                    detail: У вас нет прав для выполнения данного действия.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 403 Forbidden
+          description: Запрещено — недостаточно прав.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                404NotFound:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5d
+                    title: Not Found
+                    detail: Запрошенный ресурс не найден. Проверьте правильность URL.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 404 Not Found
+          description: Ресурс не найден.
+  /api/v1/users/:
+    get:
+      operationId: users_list
+      summary: Список пользователей
+      tags:
+      - Users
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                403Forbidden:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5c
+                    title: Forbidden
+                    detail: У вас нет прав для выполнения данного действия.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 403 Forbidden
+          description: Запрещено — недостаточно прав.
+  /api/v1/users/{user_id}/:
+    get:
+      operationId: users_retrieve
+      summary: Детали пользователя
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Users
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                403Forbidden:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5c
+                    title: Forbidden
+                    detail: У вас нет прав для выполнения данного действия.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 403 Forbidden
+          description: Запрещено — недостаточно прав.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                404NotFound:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5d
+                    title: Not Found
+                    detail: Запрошенный ресурс не найден. Проверьте правильность URL.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 404 Not Found
+          description: Ресурс не найден.
+    patch:
+      operationId: users_partial_update
+      summary: Изменить роль / тариф / блокировку
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserUpdateRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                400BadRequest:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5e
+                    title: Bad Request
+                    detail: Запрос содержит некорректные данные. Проверьте тело запроса.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 400 Bad Request
+          description: Некорректный запрос.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                403Forbidden:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5c
+                    title: Forbidden
+                    detail: У вас нет прав для выполнения данного действия.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 403 Forbidden
+          description: Запрещено — недостаточно прав.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                404NotFound:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5d
+                    title: Not Found
+                    detail: Запрошенный ресурс не найден. Проверьте правильность URL.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 404 Not Found
+          description: Ресурс не найден.
+  /api/v1/monitoring/:
+    get:
+      operationId: monitoring_retrieve
+      description: CPU, RAM, Disk, RPS за последнюю минуту, статус БД.
+      summary: Метрики системы
+      tags:
+      - Monitoring
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Monitoring'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                403Forbidden:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5c
+                    title: Forbidden
+                    detail: У вас нет прав для выполнения данного действия.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 403 Forbidden
+          description: Запрещено — недостаточно прав.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+          description: Внутренняя ошибка сервера.
+  /api/v1/banned-ips/:
+    get:
+      operationId: banned_ips_list
+      summary: Список забаненных IP
+      parameters:
+      - in: query
+        name: active_only
+        schema:
+          type: boolean
+        description: Если true — только активные баны.
+      - in: query
+        name: site_id
+        schema:
+          type: integer
+        description: Фильтр по ID сайта.
+      tags:
+      - Security
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BannedIP'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                403Forbidden:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5c
+                    title: Forbidden
+                    detail: У вас нет прав для выполнения данного действия.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 403 Forbidden
+          description: Запрещено — недостаточно прав.
+  /api/v1/admin/messages/:
+    get:
+      operationId: admin_messages_list
+      summary: Сообщения пользователей администратору
+      tags:
+      - Admin
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdminMessage'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                403Forbidden:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5c
+                    title: Forbidden
+                    detail: У вас нет прав для выполнения данного действия.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 403 Forbidden
+          description: Запрещено — недостаточно прав.
+  /api/v1/admin/messages/{msg_id}/read/:
+    post:
+      operationId: admin_messages_read_create
+      summary: Отметить сообщение как прочитанное
+      parameters:
+      - in: path
+        name: msg_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Admin
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MsgRead'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                403Forbidden:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5c
+                    title: Forbidden
+                    detail: У вас нет прав для выполнения данного действия.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 403 Forbidden
+          description: Запрещено — недостаточно прав.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                404NotFound:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5d
+                    title: Not Found
+                    detail: Запрошенный ресурс не найден. Проверьте правильность URL.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 404 Not Found
+          description: Ресурс не найден.
+  /api/v1/admin/sessions/:
+    get:
+      operationId: admin_sessions_list
+      summary: Список активных сессий
+      tags:
+      - Admin
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SessionList'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                403Forbidden:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5c
+                    title: Forbidden
+                    detail: У вас нет прав для выполнения данного действия.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 403 Forbidden
+          description: Запрещено — недостаточно прав.
+  /api/v1/admin/sessions/{session_key}/:
+    delete:
+      operationId: admin_sessions_destroy
+      summary: Завершить сессию
+      parameters:
+      - in: path
+        name: session_key
+        schema:
+          type: string
+        required: true
+      tags:
+      - Admin
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionDeleted'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                400BadRequest:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5e
+                    title: Bad Request
+                    detail: Запрос содержит некорректные данные. Проверьте тело запроса.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 400 Bad Request
+          description: Некорректный запрос.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                403Forbidden:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5c
+                    title: Forbidden
+                    detail: У вас нет прав для выполнения данного действия.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 403 Forbidden
+          description: Запрещено — недостаточно прав.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                404NotFound:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5d
+                    title: Not Found
+                    detail: Запрошенный ресурс не найден. Проверьте правильность URL.
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 404 Not Found
+          description: Ресурс не найден.
+  /api/v1/stats/:
+    get:
+      operationId: stats_retrieve
+      summary: Сводная статистика по трафику и атакам
+      tags:
+      - Stats
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserStats'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+              examples:
+                401Unauthorized:
+                  value:
+                    requestId: 018f1a2b-3c4d-7e5f-8a9b-0c1d2e3f4a5b
+                    title: Unauthorized
+                    detail: 'Аутентификация не выполнена. Передайте токен в заголовке
+                      Authorization: Bearer <token>.'
+                    timestamp: '2025-04-27T12:00:00Z'
+                  summary: 401 Unauthorized
+          description: Не авторизован — токен отсутствует или недействителен.
+components:
+  schemas:
+    AccessToken:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: Название
+          maxLength: 100
+        token:
+          type: string
+          readOnly: true
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        blocked_ips_list:
+          type: string
+          readOnly: true
+      required:
+      - blocked_ips_list
+      - created_at
+      - id
+      - name
+      - token
+    AccessTokenCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: Название
+          maxLength: 100
+      required:
+      - name
+    ActionEnum:
+      enum:
+      - block
+      - allow
+      - log
+      type: string
+      description: '* `block` - Блокировать
+
+        * `allow` - Разрешить
+
+        * `log` - Только логировать'
+    AdminMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+        message:
+          type: string
+          readOnly: true
+          title: Сообщение
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        is_read:
+          type: boolean
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - is_read
+      - message
+      - username
+    BannedIP:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        site_domain:
+          type: string
+          readOnly: true
+        ip_address:
+          type: string
+          readOnly: true
+        reason:
+          type: string
+          readOnly: true
+        banned_at:
+          type: string
+          format: date-time
+          readOnly: true
+        expires_at:
+          type: string
+          format: date-time
+          readOnly: true
+        is_active:
+          type: boolean
+          readOnly: true
+        attack_count:
+          type: integer
+          readOnly: true
+          description: Количество атак перед баном
+        time_window_minutes:
+          type: integer
+          readOnly: true
+          description: Временное окно в минутах
+      required:
+      - attack_count
+      - banned_at
+      - expires_at
+      - id
+      - ip_address
+      - is_active
+      - reason
+      - site_domain
+      - time_window_minutes
+    BlockIPBodyRequest:
+      type: object
+      properties:
+        ip:
+          type: string
+          minLength: 1
+      required:
+      - ip
+    BlockIPResult:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    DeletedMsg:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    ExportDeleted:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    ExportStarted:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    LogExport:
+      type: object
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+      required:
+      - name
+      - url
+    Monitoring:
+      type: object
+      properties:
+        cpu_percent:
+          type: number
+          format: double
+        ram_total_gb:
+          type: number
+          format: double
+        ram_used_gb:
+          type: number
+          format: double
+        ram_percent:
+          type: number
+          format: double
+        disk_total_gb:
+          type: number
+          format: double
+        disk_used_gb:
+          type: number
+          format: double
+        disk_percent:
+          type: number
+          format: double
+        requests_per_minute:
+          type: integer
+        db_ok:
+          type: boolean
+      required:
+      - cpu_percent
+      - db_ok
+      - disk_percent
+      - disk_total_gb
+      - disk_used_gb
+      - ram_percent
+      - ram_total_gb
+      - ram_used_gb
+      - requests_per_minute
+    MsgRead:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    PatchedProtectedSiteCreateRequest:
+      type: object
+      properties:
+        domain:
+          type: string
+          minLength: 1
+          title: Домен
+          maxLength: 255
+        target_ip:
+          type: string
+          minLength: 1
+          maxLength: 100
+        is_protected:
+          type: boolean
+          title: Защита активна
+        traffic_limit_mb:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          title: Лимит трафика (МБ, 0=без лимита)
+    PatchedUserUpdateRequest:
+      type: object
+      properties:
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        tariff_plan:
+          allOf:
+          - $ref: '#/components/schemas/TariffPlanEnum'
+          title: Тарифный план
+        is_blocked:
+          type: boolean
+    PatchedWAFRuleCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: Название правила
+          maxLength: 200
+        pattern:
+          type: string
+          minLength: 1
+          title: Сигнатура / паттерн
+        description:
+          type: string
+          title: Описание
+        severity:
+          $ref: '#/components/schemas/SeverityEnum'
+        action:
+          $ref: '#/components/schemas/ActionEnum'
+        is_active:
+          type: boolean
+          title: Активно
+    ProblemDetail:
+      type: object
+      properties:
+        requestId:
+          type: string
+          description: UUIDv7 уникальный идентификатор запроса
+        title:
+          type: string
+          description: Краткое описание ошибки
+        detail:
+          type: string
+          description: Подробное описание и способ устранения
+        timestamp:
+          type: string
+          description: Метка времени UTC (ISO 8601)
+      required:
+      - detail
+      - requestId
+      - timestamp
+      - title
+    ProtectedSite:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        domain:
+          type: string
+          title: Домен
+          maxLength: 255
+        target_ip:
+          type: string
+          maxLength: 100
+        is_protected:
+          type: boolean
+          title: Защита активна
+        traffic_limit_mb:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          title: Лимит трафика (МБ, 0=без лимита)
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - domain
+      - id
+      - target_ip
+    ProtectedSiteCreateRequest:
+      type: object
+      properties:
+        domain:
+          type: string
+          minLength: 1
+          title: Домен
+          maxLength: 255
+        target_ip:
+          type: string
+          minLength: 1
+          maxLength: 100
+        is_protected:
+          type: boolean
+          title: Защита активна
+        traffic_limit_mb:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          title: Лимит трафика (МБ, 0=без лимита)
+      required:
+      - domain
+      - target_ip
+    RequestLog:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        site_domain:
+          type: string
+          readOnly: true
+          nullable: true
+        ip_address:
+          type: string
+          readOnly: true
+        method:
+          type: string
+          readOnly: true
+        path:
+          type: string
+          readOnly: true
+        status_code:
+          type: integer
+          readOnly: true
+        was_blocked:
+          type: boolean
+          readOnly: true
+        rule_name:
+          type: string
+          readOnly: true
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+          readOnly: true
+        user_agent:
+          type: string
+          readOnly: true
+      required:
+      - id
+      - ip_address
+      - method
+      - path
+      - rule_name
+      - site_domain
+      - status_code
+      - timestamp
+      - user_agent
+      - was_blocked
+    RoleEnum:
+      enum:
+      - user
+      - admin
+      type: string
+      description: '* `user` - Пользователь
+
+        * `admin` - Администратор'
+    RuleDeleted:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    RuleToggled:
+      type: object
+      properties:
+        id:
+          type: integer
+        is_active:
+          type: boolean
+      required:
+      - id
+      - is_active
+    SessionDeleted:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    SessionList:
+      type: object
+      properties:
+        session_key:
+          type: string
+        user_id:
+          type: integer
+          nullable: true
+        username:
+          type: string
+          nullable: true
+        expires:
+          type: string
+          format: date-time
+      required:
+      - expires
+      - session_key
+      - user_id
+      - username
+    SeverityEnum:
+      enum:
+      - low
+      - medium
+      - high
+      - critical
+      type: string
+      description: '* `low` - Низкая
+
+        * `medium` - Средняя
+
+        * `high` - Высокая
+
+        * `critical` - Критическая'
+    TariffPlanEnum:
+      enum:
+      - free
+      - basic
+      - pro
+      type: string
+      description: '* `free` - Бесплатный
+
+        * `basic` - Базовый
+
+        * `pro` - Pro'
+    TokenDeleted:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    TokenToggled:
+      type: object
+      properties:
+        id:
+          type: integer
+        is_active:
+          type: boolean
+      required:
+      - id
+      - is_active
+    UnblockIPBodyRequest:
+      type: object
+      properties:
+        ip:
+          type: string
+          minLength: 1
+      required:
+      - ip
+    UnblockIPResult:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        tariff_plan:
+          allOf:
+          - $ref: '#/components/schemas/TariffPlanEnum'
+          title: Тарифный план
+        is_active:
+          type: boolean
+          title: Active
+          description: Designates whether this user should be treated as active. Unselect
+            this instead of deleting accounts.
+        is_blocked:
+          type: boolean
+        is_email_verified:
+          type: boolean
+          readOnly: true
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - date_joined
+      - id
+      - is_email_verified
+      - username
+    UserStats:
+      type: object
+      properties:
+        total_requests:
+          type: integer
+        blocked_requests:
+          type: integer
+        sqli_attacks:
+          type: integer
+        xss_attacks:
+          type: integer
+      required:
+      - blocked_requests
+      - sqli_attacks
+      - total_requests
+      - xss_attacks
+    WAFRule:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: Название правила
+          maxLength: 200
+        pattern:
+          type: string
+          title: Сигнатура / паттерн
+        description:
+          type: string
+          title: Описание
+        severity:
+          $ref: '#/components/schemas/SeverityEnum'
+        action:
+          $ref: '#/components/schemas/ActionEnum'
+        is_active:
+          type: boolean
+          title: Активно
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+      - pattern
+      - updated_at
+    WAFRuleCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: Название правила
+          maxLength: 200
+        pattern:
+          type: string
+          minLength: 1
+          title: Сигнатура / паттерн
+        description:
+          type: string
+          title: Описание
+        severity:
+          $ref: '#/components/schemas/SeverityEnum'
+        action:
+          $ref: '#/components/schemas/ActionEnum'
+        is_active:
+          type: boolean
+          title: Активно
+      required:
+      - name
+      - pattern
+    WAFStatusResponse:
+      type: object
+      properties:
+        domain:
+          type: string
+        is_protected:
+          type: boolean
+        target_ip:
+          type: string
+          nullable: true
+      required:
+      - domain
+      - is_protected
+      - target_ip
+tags:
+- name: WAF Engine
+  description: Эндпоинты для nginx/движка WAF (без аутентификации)
+- name: Sites
+  description: Управление защищёнными сайтами
+- name: Rules
+  description: Управление правилами WAF (только администратор)
+- name: Logs
+  description: Журнал запросов и экспорт CSV
+- name: Tokens
+  description: Управление токенами доступа
+- name: Users
+  description: Управление пользователями (только администратор)
+- name: Monitoring
+  description: Системные метрики (только администратор)
+- name: Security
+  description: Забаненные IP и атаки
+- name: Admin
+  description: Сообщения и сессии (только администратор)
+- name: Stats
+  description: Агрегированная статистика

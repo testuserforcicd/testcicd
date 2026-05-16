@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,9 +26,21 @@ SECRET_KEY = 'django-insecure-fl_&7e2t4!1w$fbmwwv33yewe^bono&)*!kr5+@_kiur3dlb*g
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    'c019-94-156-122-220.ngrok-free.app',
+    '*.ngrok-free.app', 
+    'web',
+]
 
-
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8001',
+    'http://127.0.0.1:8001',
+    'https://localhost:8001',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
 # Application definition
 
 INSTALLED_APPS = [
@@ -44,6 +57,8 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.github',
     'django_otp',
     'django_otp.plugins.otp_totp',
+    'rest_framework',
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -84,11 +99,12 @@ WSGI_APPLICATION = 'waf_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'waf_db', 
-        'USER': 'postgres',
-        'PASSWORD': 'nata', #пароль
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
+        'NAME': os.environ.get('DB_NAME', 'waf_db'),
+        'USER': os.environ.get('DB_USER', 'waf_user'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'secretpassword'),
+        # Важно: внутри Docker-сети хостом является имя сервиса БД ('db')
+        'HOST': os.environ.get('DB_HOST', 'localhost'), 
+        'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }
 
@@ -128,6 +144,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+# added/
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 AUTH_USER_MODEL = 'accounts.User'
 LOGIN_REDIRECT_URL = 'dashboard'
@@ -135,11 +153,12 @@ LOGOUT_REDIRECT_URL = 'login'
 
 # Настройки почты
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.mail.ru' 
-EMAIL_PORT = 465
-EMAIL_USE_SSL = True
-EMAIL_HOST_USER = 'gijxsc@mail.ru' 
-EMAIL_HOST_PASSWORD = 'lOWhmOdlgQe93OffsFA7'
+EMAIL_HOST = 'smtp.gmail.com' 
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True      # TLS на 587
+EMAIL_USE_SSL = False 
+EMAIL_HOST_USER = 'jacobs.monarchist@gmail.com' 
+EMAIL_HOST_PASSWORD = 'uzle zogk ocdu forv'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # для oauth
@@ -168,3 +187,76 @@ SOCIALACCOUNT_AUTO_SIGNUP = True
 SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
 SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+
+#redis
+
+CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+
+
+
+# ─── Django REST Framework ───────────────────────────────────────────────────
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [],
+    "DEFAULT_PERMISSION_CLASSES": [],
+    "DEFAULT_PARSER_CLASSES": [
+        "rest_framework.parsers.JSONParser",
+    ],
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
+    ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "EXCEPTION_HANDLER": "accounts.api.exception_handler.custom_exception_handler",
+}
+
+# ─── drf-spectacular (OpenAPI / Swagger) ────────────────────────────────────
+SPECTACULAR_SETTINGS = {
+    "TITLE": "WAF API",
+    "DESCRIPTION": (
+        "REST API для управления Web Application Firewall. "
+        "Аутентификация через Bearer-токен.\n\n"
+        "Как тестировать в Swagger:\n"
+        "1) Получите токен через POST /api/v1/auth/token/ (username, password, otp_token при включенном 2FA).\n"
+        "2) Нажмите Authorize и вставьте: Bearer <token>.\n"
+        
+    ),
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SCHEMA_PATH_PREFIX": "/api/v1",
+    "COMPONENT_SPLIT_REQUEST": True,
+    "SORT_OPERATIONS": False,
+    "SWAGGER_UI_SETTINGS": {
+        "persistAuthorization": True,
+    },
+    "APPEND_COMPONENTS": {
+        "securitySchemes": {
+            "BearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "Token",
+                "description": "Вставьте токен в формате: Bearer <token>",
+            }
+        }
+    },
+    "SECURITY": [{"BearerAuth": []}],
+    "TAGS": [
+        {"name": "Auth", "description": "Регистрация, login/logout, 2FA и получение Bearer-токена"},
+        {"name": "WAF Engine", "description": "Эндпоинты для nginx/движка WAF (без аутентификации)"},
+        {"name": "Sites", "description": "Управление защищёнными сайтами"},
+        {"name": "Rules", "description": "Управление правилами WAF (только администратор)"},
+        {"name": "Logs", "description": "Журнал запросов и экспорт CSV"},
+        {"name": "Tokens", "description": "Управление токенами доступа"},
+        {"name": "Users", "description": "Управление пользователями (только администратор)"},
+        {"name": "Monitoring", "description": "Системные метрики (только администратор)"},
+        {"name": "Security", "description": "Забаненные IP и атаки"},
+        {"name": "Admin", "description": "Сообщения и сессии (только администратор)"},
+        {"name": "Stats", "description": "Агрегированная статистика"},
+    ],
+}
