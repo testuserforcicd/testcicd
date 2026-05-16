@@ -5,7 +5,7 @@ on:
   push:
     branches:
       - main
-      - master
+      - last_fix
     tags:
       - 'v*.*.*'
 
